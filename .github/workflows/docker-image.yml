@@ -3,47 +3,47 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - main  # ou a branch que você quiser monitorar
+      - main  # adjust as needed
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Baixa o código
+      # 1. Checkout repository
       - name: Checkout source
         uses: actions/checkout@v4
 
-      # 2. Instala o .NET SDK
+      # 2. Setup .NET SDK
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0' # ajuste conforme sua versão
+          dotnet-version: '8.0' # adjust your version
 
-      # 3. Restaura dependências
+      # 3. Restore dependencies
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore ./src/Shopping.Api/Shopping.Api.csproj
 
-      # 4. Build da aplicação
+      # 4. Build project
       - name: Build project
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build ./src/Shopping.Api/Shopping.Api.csproj --configuration Release --no-restore
 
-      # 5. Publica o projeto (gera artefatos prontos para o Docker)
+      # 5. Publish project (build artifacts for Docker)
       - name: Publish app
-        run: dotnet publish -c Release -o ./publish
+        run: dotnet publish ./src/Shopping.Api/Shopping.Api.csproj -c Release -o ./publish
 
-      # 6. Login no Docker Hub
+      # 6. Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 7. Build e push da imagem
+      # 7. Build and push Docker image
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./src/Shopping.Api       # 👈 context is where the Dockerfile is
+          file: ./src/Shopping.Api/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/shoppingapi:latest
