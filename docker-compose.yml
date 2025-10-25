@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  shoppingapi:
+    build:
+      context: ./src/Shopping.Api
+      dockerfile: Dockerfile
+    image: shoppingapi
+    container_name: shoppingapi
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDB__ConnectionString=mongodb://mongo:27017
+      - MongoDB__DatabaseName=MyAppDb
+      - MongoDB__CollectionName=Users
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

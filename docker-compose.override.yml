@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  shoppingapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - MongoDB__ConnectionString=mongodb://mongo:27017
+      - MongoDB__DatabaseName=MyAppDb
+      - MongoDB__CollectionName=Users
+    ports:
+      - "5000:80"
+    volumes:
+      - ./src/Shopping.Api:/app
+    depends_on:
+      - mongo
+
+  mongo:
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
