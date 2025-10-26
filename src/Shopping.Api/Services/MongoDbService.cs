@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Shopping.Api.Model;
+using Shopping.Api.Models;
 using Shopping.Api.Utils;
 
 namespace Shopping.Api.Services;

@@ -5,21 +5,24 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
-      - MongoDB__ConnectionString=mongodb://mongo:27017
-      - MongoDB__DatabaseName=MyAppDb
-      - MongoDB__CollectionName=Users
-    ports:
-      - "5000:80"
     volumes:
       - ./src/Shopping.Api:/app
-    depends_on:
-      - mongo
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+    command: dotnet watch run --urls http://+:80
+    ports:
+      - "5000:80"
+
+  notificationapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    volumes:
+      - ./src/Notification.Api:/app
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+    command: dotnet watch run --urls http://+:80
+    ports:
+      - "5001:80"
 
   mongo:
     ports:
       - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-
-volumes:
-  mongo_data:

@@ -1,19 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Shopping.Api.Model;
+using Shopping.Api.Models;
 using Shopping.Api.Services;
+using System.Text;
+using System.Text.Json;
 
 namespace Shopping.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UsersController : ControllerBase
+public class UsersController(MongoDbService mongoService, IHttpClientFactory httpClient) : ControllerBase
 {
-    private readonly MongoDbService _mongoService;
-
-    public UsersController(MongoDbService mongoService)
-    {
-        _mongoService = mongoService;
-    }
+    private readonly MongoDbService _mongoService = mongoService;
+    private readonly HttpClient _httpClient = httpClient.CreateClient("notificationClient");
 
     [HttpGet]
     public async Task<IActionResult> Get() =>
@@ -27,9 +25,36 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post(User user)
+    public async Task<IActionResult> Post([FromBody] User user)
     {
+        if (user == null)
+            return BadRequest("User data is required.");
+
+        // Save user in MongoDB
         await _mongoService.CreateAsync(user);
+
+        // Prepare notification payload
+        var notification = new Notification
+        {
+            Title = "New User Created",
+            Message = $"User {user.Name} was successfully created.",
+            Email = user.Email,
+        };
+
+        // Convert notification to JSON
+        var json = JsonSerializer.Serialize(notification);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        // Send notification (adjust URL as needed)
+        var response = await _httpClient.PostAsync("https://your-notification-service/api/notifications", content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            // Optional: log or handle notification failure
+            return StatusCode((int)response.StatusCode, "User created, but notification failed.");
+        }
+
+        // Return CreatedAtAction response
         return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
     }
 

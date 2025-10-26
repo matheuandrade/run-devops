@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Shopping.Api.Model;
+namespace Shopping.Api.Models;
 
 public class User
 {

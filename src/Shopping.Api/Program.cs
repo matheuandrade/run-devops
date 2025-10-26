@@ -9,6 +9,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDB"));
 
+builder.Services.AddHttpClient<INotificationClient, NotificationClient>(client =>
+{
+    var baseUrl = builder.Configuration["NotificationService:BaseUrl"];
+    client.BaseAddress = new Uri(baseUrl!);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
 // Register service
 builder.Services.AddSingleton<MongoDbService>();
 
