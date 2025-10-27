@@ -9,11 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDB"));
 
-builder.Services.AddHttpClient<INotificationClient, NotificationClient>(client =>
+builder.Services.AddHttpClient("notificationClient", (sp, client) =>
 {
-    var baseUrl = builder.Configuration["NotificationService:BaseUrl"];
-    client.BaseAddress = new Uri(baseUrl!);
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    var config = sp.GetRequiredService<IConfiguration>();
+    var baseUrl = config["NotificationService:BaseUrl"] ?? throw new InvalidOperationException("Missing NotificationService:BaseUrl");
+
+    client.BaseAddress = new Uri(baseUrl);
+    client.DefaultRequestHeaders.Accept.Add(
+        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 });
 
 // Register service
@@ -43,4 +46,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

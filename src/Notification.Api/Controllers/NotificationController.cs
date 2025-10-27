@@ -9,6 +9,6 @@ public class NotificationController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post(Models.Notification notification)
     {
-        return CreatedAtAction("Get", new { id = notification.Id }, notification);
+        return Ok(notification);
     }
 }

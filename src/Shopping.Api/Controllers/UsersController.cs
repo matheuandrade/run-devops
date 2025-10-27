@@ -8,7 +8,7 @@ namespace Shopping.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UsersController(MongoDbService mongoService, IHttpClientFactory httpClient) : ControllerBase
+public class UsersController(MongoDbService mongoService, IHttpClientFactory httpClient, ILogger<UsersController> logger) : ControllerBase
 {
     private readonly MongoDbService _mongoService = mongoService;
     private readonly HttpClient _httpClient = httpClient.CreateClient("notificationClient");
@@ -39,20 +39,29 @@ public class UsersController(MongoDbService mongoService, IHttpClientFactory htt
             Title = "New User Created",
             Message = $"User {user.Name} was successfully created.",
             Email = user.Email,
+            Id = user.Id
         };
 
-        // Convert notification to JSON
-        var json = JsonSerializer.Serialize(notification);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-        // Send notification (adjust URL as needed)
-        var response = await _httpClient.PostAsync("https://your-notification-service/api/notifications", content);
-
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            // Optional: log or handle notification failure
-            return StatusCode((int)response.StatusCode, "User created, but notification failed.");
+            // Convert notification to JSON
+            var json = JsonSerializer.Serialize(notification);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            // Send notification (adjust URL as needed)
+            var response = await _httpClient.PostAsync("/api/notification", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                // Optional: log or handle notification failure
+                return StatusCode((int)response.StatusCode, "User created, but notification failed.");
+            }
         }
+        catch (Exception ex) 
+        {
+            logger.LogError(ex, "Internal server error.");
+            return BadRequest();
+        }       
 
         // Return CreatedAtAction response
         return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
