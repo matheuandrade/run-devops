@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notificationapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notificationapi
+  template:
+    metadata:
+      labels:
+        app: notificationapi
+    spec:
+      containers:
+        - name: notificationapi
+          image: notificationapi:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+            - name: MongoDB__ConnectionString
+              value: mongodb://mongo:27017
+            - name: MongoDB__DatabaseName
+              value: MyAppDb
+            - name: MongoDB__CollectionName
+              value: Notifications
+          imagePullPolicy: IfNotPresent

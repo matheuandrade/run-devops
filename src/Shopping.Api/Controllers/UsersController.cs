@@ -11,7 +11,7 @@ namespace Shopping.Api.Controllers;
 public class UsersController(MongoDbService mongoService, IHttpClientFactory httpClient, ILogger<UsersController> logger) : ControllerBase
 {
     private readonly MongoDbService _mongoService = mongoService;
-    private readonly HttpClient _httpClient = httpClient.CreateClient("notificationClient");
+    private readonly HttpClient _notificationClient = httpClient.CreateClient("notificationClient");
 
     [HttpGet]
     public async Task<IActionResult> Get() =>
@@ -49,7 +49,7 @@ public class UsersController(MongoDbService mongoService, IHttpClientFactory htt
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             // Send notification (adjust URL as needed)
-            var response = await _httpClient.PostAsync("/api/notification", content);
+            var response = await _notificationClient.PostAsync("/api/notification", content);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -60,7 +60,7 @@ public class UsersController(MongoDbService mongoService, IHttpClientFactory htt
         catch (Exception ex) 
         {
             logger.LogError(ex, "Internal server error.");
-            return BadRequest();
+            return StatusCode(500);
         }       
 
         // Return CreatedAtAction response

@@ -36,11 +36,12 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Shopping API v1");
+    options.RoutePrefix = "swagger"; // garante acesso em /swagger/index.html
+});
 
 app.UseAuthorization();
 
