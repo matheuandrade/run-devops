@@ -41,8 +41,8 @@ stages:
         tags: |
           $(tag)
 
-    - upload: manifests
-      artifact: manifests
+    - upload: aks
+      artifact: aks
 
 - stage: Deploy
   displayName: Deploy stage
@@ -70,8 +70,8 @@ stages:
             inputs:
               action: deploy
               manifests: |
-                $(Pipeline.Workspace)/manifests/deployment.yml
-                $(Pipeline.Workspace)/manifests/service.yml
+                $(Pipeline.Workspace)/aks/shoppingapi-deployment.yml
+                $(Pipeline.Workspace)/aks/shoppingapi-service.yml
               imagePullSecrets: |
                 $(imagePullSecret)
               containers: |
