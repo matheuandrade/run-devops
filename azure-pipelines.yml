@@ -61,8 +61,7 @@ stages:
 
   jobs:
   - deployment: Deploy
-    displayName: 'Deploy to Kubernetes cluster'
-    environment: 'shopping-aks.default'   # 👈 nome do Environment no Azure DevOps
+    displayName: 'Deploy to Kubernetes cluster' # 👈 nome do Environment no Azure DevOps
     pool:
       vmImage: $(vmImageName)
     strategy:
