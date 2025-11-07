@@ -19,7 +19,7 @@ variables:
   imagePullSecret: 'matheuandrade8262ddb7-auth'
 
   # Agent VM image name
-  vmImageName: 'ubuntu-latest'
+  vmImageName: 'Default'
 
 
 stages:
