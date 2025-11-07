@@ -1,6 +1,6 @@
-# Deploy to Azure Kubernetes Service
-# Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+# ===============================================
+# Build, Push e Deploy para AKS usando ACR
+# ===============================================
 
 trigger:
 - main
@@ -9,71 +9,85 @@ resources:
 - repo: self
 
 variables:
-
-  # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: '253ec03d-fe0f-41bc-af93-2cd4d526c1ba'
-  imageRepository: 'matheuandraderundevops'
+  # 🔹 Registro e imagem
+  dockerRegistryServiceConnection: 'shopping-aks-connection'   # 👈 nome atualizado do service connection AKS
+  imageRepository: 'shoppingapi'
   containerRegistry: 'matheuandrade.azurecr.io'
   dockerfilePath: '**/Dockerfile'
   tag: '$(Build.BuildId)'
-  imagePullSecret: 'matheuandrade18678db3-auth'
+  imagePullSecret: 'acr-secret'
 
-  # Agent VM image name
+  # 🔹 Agente padrão
   vmImageName: 'ubuntu-latest'
 
+  # 🔹 Namespace usado no AKS
+  kubernetesNamespace: 'default'
 
 stages:
+# ===============================================
+# 🏗️ Stage 1: Build e Push da imagem Docker
+# ===============================================
 - stage: Build
-  displayName: Build stage
+  displayName: 'Build & Push Docker Image'
   jobs:
   - job: Build
-    displayName: Build
+    displayName: 'Build & Push'
     pool:
       vmImage: $(vmImageName)
     steps:
     - task: Docker@2
-      displayName: Build and push an image to container registry
+      displayName: 'Build and Push image to ACR'
       inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
+        command: 'buildAndPush'
+        repository: '$(imageRepository)'
+        dockerfile: '$(dockerfilePath)'
+        containerRegistry: '$(dockerRegistryServiceConnection)'
         tags: |
           $(tag)
 
-    - upload: manifests
-      artifact: manifests
+    # 📦 Publica os manifests (diretório aks/) como artefato
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish manifests artifact'
+      inputs:
+        targetPath: 'aks'
+        artifact: 'aks'
 
+# ===============================================
+# 🚀 Stage 2: Deploy no AKS
+# ===============================================
 - stage: Deploy
-  displayName: Deploy stage
+  displayName: 'Deploy to AKS'
   dependsOn: Build
 
   jobs:
   - deployment: Deploy
-    displayName: Deploy
+    displayName: 'Deploy to Kubernetes cluster'
+    environment: 'shopping-aks.default'   # 👈 nome do Environment no Azure DevOps
     pool:
       vmImage: $(vmImageName)
-    environment: 'matheuandraderundevops-1608.default'
     strategy:
       runOnce:
         deploy:
           steps:
+          # 🔹 Passo 1: criar secret para o ACR
           - task: KubernetesManifest@0
-            displayName: Create imagePullSecret
+            displayName: 'Create imagePullSecret'
             inputs:
-              action: createSecret
-              secretName: $(imagePullSecret)
-              dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+              action: 'createSecret'
+              secretName: '$(imagePullSecret)'
+              namespace: '$(kubernetesNamespace)'
+              dockerRegistryEndpoint: '$(dockerRegistryServiceConnection)'
 
+          # 🔹 Passo 2: aplicar os manifests (deployment + service)
           - task: KubernetesManifest@0
-            displayName: Deploy to Kubernetes cluster
+            displayName: 'Deploy manifests to AKS'
             inputs:
               action: deploy
+              namespace: '$(kubernetesNamespace)'
               manifests: |
-                $(Pipeline.Workspace)/aks/deployment.yml
-                $(Pipeline.Workspace)/aks/service.yml
+                $(Pipeline.Workspace)/aks/shoppingapi-deployment.yml
+                $(Pipeline.Workspace)/aks/shoppingapi-service.yml
               imagePullSecrets: |
                 $(imagePullSecret)
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
-
