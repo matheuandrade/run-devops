@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shoppingapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shoppingapi
+  template:
+    metadata:
+      labels:
+        app: shoppingapi
+    spec:
+      imagePullSecrets:
+        - name: acr-secret
+      containers:
+        - name: shoppingapi
+          image: matheuandrade.azurecr.io/shoppingapi:v1
+          ports:
+            - containerPort: 80
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:80
+            - name: MongoDB__ConnectionString
+              value: mongodb://mongo:27017
+            - name: MongoDB__DatabaseName
+              value: MyAppDb
+            - name: MongoDB__CollectionName
+              value: Users
+            - name: NotificationService__BaseUrl
+              value: http://notificationapi
+            - name: ENABLE_SWAGGER
+              value: "true"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

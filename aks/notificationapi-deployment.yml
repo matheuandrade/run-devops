@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notificationapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notificationapi
+  template:
+    metadata:
+      labels:
+        app: notificationapi
+    spec:
+      imagePullSecrets:
+        - name: acr-secret
+      containers:
+        - name: notificationapi
+          image: matheuandrade.azurecr.io/notificationapi:v1
+          ports:
+            - containerPort: 80
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:80
+            - name: MongoDB__ConnectionString
+              value: mongodb://mongo:27017
+            - name: MongoDB__DatabaseName
+              value: MyAppDb
+            - name: MongoDB__CollectionName
+              value: Notifications
+            - name: ENABLE_SWAGGER
+              value: "true"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
