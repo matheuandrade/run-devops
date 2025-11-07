@@ -36,12 +36,17 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
-app.UseSwagger();
-app.UseSwaggerUI(options =>
+var enableSwagger = Environment.GetEnvironmentVariable("ENABLE_SWAGGER");
+
+if (app.Environment.IsDevelopment() || string.Equals(enableSwagger, "true", StringComparison.OrdinalIgnoreCase))
 {
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Shopping API v1");
-    options.RoutePrefix = "swagger"; // garante acesso em /swagger/index.html
-});
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Shopping API v1");
+        options.RoutePrefix = "swagger"; // garante acesso em /swagger/index.html
+    });
+}
 
 app.UseAuthorization();
 

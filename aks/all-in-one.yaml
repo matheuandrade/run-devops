@@ -98,6 +98,8 @@ spec:
               value: MyAppDb
             - name: MongoDB__CollectionName
               value: Notifications
+            - name: ENABLE_SWAGGER
+              value: "true" # 👈 habilita swagger
           resources:
             requests:
               cpu: "100m"
@@ -155,6 +157,8 @@ spec:
               value: Users
             - name: NotificationService__BaseUrl
               value: http://notificationapi
+            - name: ENABLE_SWAGGER
+              value: "true" # 👈 habilita swagger
           resources:
             requests:
               cpu: "100m"
