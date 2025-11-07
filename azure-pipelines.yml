@@ -11,7 +11,7 @@ resources:
 variables:
 
   # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: 'd4f432af-0cb0-4ba6-8206-363d758eb252'
+  dockerRegistryServiceConnection: 'shopping-aks-connection'
   imageRepository: 'shoppingapi'
   containerRegistry: 'matheuandrade.azurecr.io'
   dockerfilePath: '**/Dockerfile'
@@ -19,7 +19,7 @@ variables:
   imagePullSecret: 'matheuandrade8262ddb7-auth'
 
   # Agent VM image name
-  vmImageName: 'Default'
+  vmImageName: 'ubuntu-latest'
 
 
 stages:
@@ -29,7 +29,7 @@ stages:
   - job: Build
     displayName: Build
     pool:
-      vmImage: $(vmImageName)
+      name: Default
     steps:
     - task: Docker@2
       displayName: Build and push an image to container registry
@@ -52,7 +52,7 @@ stages:
   - deployment: Deploy
     displayName: Deploy
     pool:
-      vmImage: $(vmImageName)
+      name: Default
     environment: 'matheuandraderundevops.default'
     strategy:
       runOnce:
